@@ -1,0 +1,47 @@
+$borderColor: #223c4a;
+$bgColor: #aaaaaabb;
+$headerColor: #bbbbbb;
+$textColor: #dddddd;
+
+.map-editor-root {
+	position: absolute;
+	top: 0.5%;
+	bottom: 0.5%;
+	left: 5px;
+	border: 2px solid $borderColor;
+	background-color: $bgColor;
+	color: $textColor;
+	width: 20%;
+	padding: 5px;
+}
+
+.map-editor-root h1 {
+	color: $headerColor;
+	font-size: large;
+	text-align: center;
+}
+
+.map-editor-tileset {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+}
+.map-editor-tileset img {
+	display: block;
+}
+
+.map-editor-tile {
+	display: block;
+	position:absolute;
+	top: 0px;
+	left: 0px;
+	border: 1px solid black;
+	margin: 0;
+	padding: 0;
+}
+.map-editor-tile:hover {
+	border: 1px solid white;
+}
+.map-editor-tile[selected] {
+	border: 1px solid red;
+}
