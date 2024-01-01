@@ -16,9 +16,6 @@ type GridCellLayer = {
 type GridCell = {
 	x : number,
 	y : number,
-	tileset : Tileset | null,
-	tileId : number,
-	sprite : Sprite,
 	layers? : Map<number, GridCellLayer>,
 	collision : GridCellCollisionType
 }
@@ -40,9 +37,15 @@ class Tilemap extends Container {
 				let map = resp.data;
 				this.initialize(map.mapHeight, map.mapHeight, map.cellSize);
 				for(var tile of map.map) {
-					var tileset = Tileset.get(tile.tileset);
-					if (tileset) {
-						this.setTile(tile.x, tile.y, tileset, tile.tileId);
+					var layers = tile.layers;
+					var keys = Object.keys(layers);
+					for(var layer of keys) {
+						let layerNum = parseInt(layer);
+						console.log(layer);
+						var tileset = Tileset.get(layers[layer].tileset);
+						if (tileset) {
+							this.setTile(tile.x, tile.y, tileset, layers[layer].tileId, layerNum);
+						}
 					}
 				}
 			}).catch( (err) => {
@@ -63,9 +66,6 @@ class Tilemap extends Container {
 				this.gridData[x][y] = {
 					x : x,
 					y: y,
-					tileset: null,
-					tileId: 0,
-					sprite: null,
 					layers: new Map<number, GridCellLayer>(),
 					collision: GridCellCollisionType.Block
 				}
@@ -80,9 +80,12 @@ class Tilemap extends Container {
 			for(let x = 0; x < this.mapWidth; x++) {
 				if (y >= this.gridData.length || x >= this.gridData[y].length) 
 					continue;
-				if (this.gridData[x][y].sprite) {
-					this.removeChild(this.gridData[x][y].sprite);
-					this.gridData[x][y].sprite.destroy();
+				for(var layer of this.gridData[x][y].layers.keys()) {
+					if (this.gridData[x][y].layers.get(layer).sprite)
+					{
+						this.removeChild(this.gridData[x][y].layers.get(layer).sprite);
+						this.gridData[x][y].layers.get(layer).sprite.destroy();
+					}
 				}
 			}
 		}

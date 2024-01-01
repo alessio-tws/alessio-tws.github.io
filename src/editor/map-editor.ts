@@ -3,6 +3,7 @@ import "../css/editor/map-editor.scss";
 import { Tilemap } from "../engine/world/tilemap";
 import { Tileset } from "../engine/world/tileset";
 import { Scene } from "../engine/application/scene";
+import { saveAs } from "file-saver";
 
 class MapEditor {
 
@@ -10,6 +11,8 @@ class MapEditor {
 
 	currentTile : HTMLDivElement;
 	tiles : Array<HTMLDivElement> = [];
+
+	layerInput : HTMLInputElement;
 
 	currentScene : Scene;
 	currentMap : Tilemap;
@@ -20,9 +23,25 @@ class MapEditor {
 		this.root.innerHTML = "<h1>Map Editor</h1>";
 		this.root.className = "map-editor-root";
 		document.body.appendChild(this.root);
+		
 		this.tileOverGraphic = new Graphics();
 		this.tileOverGraphic.lineStyle(2, 0xFF0000);
 		this.tileOverGraphic.drawRect(0,0, 32,32);
+		this.tileOverGraphic.zIndex = 99;
+		this.constructTilesets();
+
+		this.layerInput = document.createElement("input");
+		this.root.appendChild(this.layerInput);
+
+		var exportBtn = document.createElement("button");
+		exportBtn.innerText = "Export";
+		this.root.appendChild(exportBtn);
+		exportBtn.onclick = (e) => {
+			this.exportMap();
+		}
+	}
+
+	private constructTilesets() {
 		for(var key of Tileset.tilesets.keys()) {
 			var split = key.split("/");
 			var element = document.createElement("div");
@@ -54,7 +73,6 @@ class MapEditor {
 			this.setCurrentTile(this.tiles[0]);
 		}
 	}
-
 	setCurrentTile(tile : HTMLDivElement) {
 		if (this.currentTile) {
 			this.currentTile.removeAttribute("selected");
@@ -72,7 +90,8 @@ class MapEditor {
 		scene.onclick = (e) => {
 			var worldPos = scene.screenToWorld(e.screen.x-16, e.screen.y-32);
 			var gridPos = this.currentMap.worldToGrid(worldPos.x, worldPos.y);
-			this.currentMap.setTile(gridPos.x, gridPos.y, Tileset.get("assets/images/tilesets/Tileset.png"), parseInt(this.currentTile.getAttribute("id")), 1);
+			var layer = parseInt(this.layerInput.value);
+			this.currentMap.setTile(gridPos.x, gridPos.y, Tileset.get("assets/images/tilesets/Tileset.png"), parseInt(this.currentTile.getAttribute("id")), layer);
 		};
 		scene.onmousemove = (e) => {
 			var worldPos = scene.screenToWorld(e.screen.x-16, e.screen.y-32);
@@ -81,6 +100,42 @@ class MapEditor {
 			this.tileOverGraphic.x = _w.x;
 			this.tileOverGraphic.y = _w.y;
 		}
+	}
+	exportMap() { 
+		var exported = {
+			"mapHeight": this.currentMap.mapHeight,
+			"mapWidth": this.currentMap.mapWidth,
+			"cellSize": this.currentMap.cellSize,
+			"map": []
+		};
+		
+		for(let y = 0; y < this.currentMap.mapHeight; y++) {
+			for(let x = 0; x < this.currentMap.mapWidth; x++) {
+
+				var gridCell = {
+					x: x,
+					y: y,
+					collision: this.currentMap.gridData[x][y].collision,
+					layers: {}
+				}
+				var saveTile = false;
+				for(var layerKey of this.currentMap.gridData[x][y].layers.keys()) {
+					var layer = {
+						tileset: this.currentMap.gridData[x][y].layers.get(layerKey).tileset.options.texture,
+						tileId: this.currentMap.gridData[x][y].layers.get(layerKey).tileId
+					}
+					gridCell.layers[layerKey] = layer;
+					saveTile = true;
+				}
+
+				if (saveTile) {
+					exported.map.push(gridCell);
+				}
+			}
+		}
+		var fileToSave = new Blob([JSON.stringify(exported, undefined, 2)], { type: 'application/json'});
+		saveAs(fileToSave, "map.json");
+		console.log(exported);
 	}
 }
 

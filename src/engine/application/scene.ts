@@ -31,6 +31,7 @@ class Scene extends Container {
 		this.objects = [];
 		document.addEventListener("keydown", this._onKeyDown.bind(this));
 		document.addEventListener("keyup", this._onKeyUp.bind(this));
+		this.sortableChildren = true;
 	}
 
 	public startScene(stage : Container) {

@@ -90,7 +90,6 @@ Game.app.ticker.add((delta) => {
 			animated.getDisplayObject().x = oldPos.x;
 			animated.getDisplayObject().y = oldPos.y;	
 		}
-		console.log(gridCoord, animated.getDisplayObject().position);
 	}
 })
 
@@ -105,27 +104,11 @@ var ts = await Tileset.load({
 })
 
 var tilemap = new Tilemap();
-tilemap.initialize(30,30, 32);
-tilemap.fill(ts, 9);
-tilemap.setTile(0, 0, ts, 0);
-tilemap.setTile(0, 29, ts, 16);
-tilemap.setTile(29, 0, ts, 2);
-tilemap.setTile(29, 29, ts, 18);
-
-for(let x = 1; x < 29; x++) {
-	tilemap.setTile(x, 0, ts, 1);
-	tilemap.setTile(x, 29, ts, 17);
-}
-
-for(let y = 1; y < 29; y++) {
-	tilemap.setTile(0, y, ts, 8);
-	tilemap.setTile(29, y, ts, 10);
-}
+tilemap.fromJson("assets/maps/map2.json");
 
 scene.addChild(tilemap);
 scene.addObject(animated);
 
-//tilemap.fromJson("assets/maps/test-map.json");
 
 var mapEditor = new MapEditor();
 mapEditor.setMap(tilemap);
