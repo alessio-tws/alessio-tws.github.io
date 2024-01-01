@@ -7,12 +7,19 @@ enum GridCellCollisionType {
 	Block
 }
 
+type GridCellLayer = {
+	sprite? : Sprite,
+	tileset? : Tileset,
+	tileId? : number
+}
+
 type GridCell = {
 	x : number,
 	y : number,
 	tileset : Tileset | null,
 	tileId : number,
 	sprite : Sprite,
+	layers? : Map<number, GridCellLayer>,
 	collision : GridCellCollisionType
 }
 
@@ -44,13 +51,13 @@ class Tilemap extends Container {
 	}
 
 	public initialize(mapHeight : number, mapWidth : number, cellSize : number) {
-		
 		this.clear();
 
 		this.mapHeight = mapHeight;
 		this.mapWidth = mapWidth;
 		this.cellSize = cellSize;
 		this.gridData = new Array(this.mapHeight).fill({}).map(() => new Array(this.mapWidth).fill({}));
+
 		for(let y = 0; y < this.mapHeight; y++) {
 			for (let x = 0; x < this.mapWidth; x++) {
 				this.gridData[x][y] = {
@@ -59,10 +66,12 @@ class Tilemap extends Container {
 					tileset: null,
 					tileId: 0,
 					sprite: null,
+					layers: new Map<number, GridCellLayer>(),
 					collision: GridCellCollisionType.Block
 				}
 			}
 		}
+
 		this.sortableChildren = true;
 	}
 
@@ -79,26 +88,31 @@ class Tilemap extends Container {
 		}
 	}
 
-	public setTile(x : number, y : number, tileset : Tileset, tileId : number, collision : GridCellCollisionType = GridCellCollisionType.None) {
+	public setTile(x : number, y : number, tileset : Tileset, tileId : number, layer : number = 0, collision : GridCellCollisionType = GridCellCollisionType.None) {
 		if (x >= this.mapWidth || y >= this.mapHeight || x < 0 || y < 0) {
 			console.error("Out of bounds tile requested", x, y);
 			return;
 		}
+		if (!this.gridData[x][y].layers.has(layer)) {
+			this.gridData[x][y].layers.set(layer, {});
+		}
+		var layerData = this.gridData[x][y].layers.get(layer);
 
-		if (this.gridData[x][y].sprite) {
-			this.removeChild(this.gridData[x][y].sprite);
+		if (layerData.sprite) {
+			layerData.sprite.destroy();
 		}
 
-		this.gridData[x][y].sprite = Sprite.from(tileset.getTile(tileId));
-		this.gridData[x][y].sprite.zIndex = 0;
-		this.addChild(this.gridData[x][y].sprite);
-		this.gridData[x][y].sprite.x = x * this.cellSize;
-		this.gridData[x][y].sprite.y = y * this.cellSize;
+		var sprite = Sprite.from(tileset.getTile(tileId));
+		sprite.zIndex = layer;
+		sprite.eventMode = "dynamic";
+		sprite.x = x * this.cellSize;
+		sprite.y = y * this.cellSize;
+		this.addChild(sprite);
 
-		this.gridData[x][y].tileId = tileId;
-		this.gridData[x][y].tileset = tileset;
+		layerData.tileId = tileId;
+		layerData.tileset = tileset;
+		layerData.sprite = sprite;
 		this.gridData[x][y].collision = collision;
-		this.gridData[x][y].sprite.eventMode = "dynamic";
 	}
 
 	public fill(tileset : Tileset, tileId : number) {

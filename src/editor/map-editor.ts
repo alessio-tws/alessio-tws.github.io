@@ -72,7 +72,7 @@ class MapEditor {
 		scene.onclick = (e) => {
 			var worldPos = scene.screenToWorld(e.screen.x-16, e.screen.y-32);
 			var gridPos = this.currentMap.worldToGrid(worldPos.x, worldPos.y);
-			this.currentMap.setTile(gridPos.x, gridPos.y, Tileset.get("assets/images/tilesets/Tileset.png"), parseInt(this.currentTile.getAttribute("id")));
+			this.currentMap.setTile(gridPos.x, gridPos.y, Tileset.get("assets/images/tilesets/Tileset.png"), parseInt(this.currentTile.getAttribute("id")), 1);
 		};
 		scene.onmousemove = (e) => {
 			var worldPos = scene.screenToWorld(e.screen.x-16, e.screen.y-32);
