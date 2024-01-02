@@ -38,6 +38,12 @@ module.exports = {
 		]
 	},
 	resolve: {
-		extensions: ['.tsx','.ts','.js']
-	}
+		extensions: ['.tsx','.ts','.js'],
+		alias: {
+		  'react': 'nervjs',
+		  'react-dom': 'nervjs',
+		  // Not necessary unless you consume a module using `createClass`
+		  'create-react-class': "nerv-create-class"
+		}
+	  }
 }

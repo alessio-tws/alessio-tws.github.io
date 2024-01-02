@@ -7,7 +7,7 @@ import { StaticObject } from "./engine/world/static-object";
 import { Tileset } from "./engine/world/tileset";
 import { Tilemap } from "./engine/world/tilemap";
 import GameMath from "./engine/math";
-import { MapEditor } from "./editor/map-editor";
+import { MapEditor } from "./editor/map/map-editor";
 
 let type = "WebGL";
 if (!PIXI.utils.isWebGLSupported()) {
@@ -104,7 +104,7 @@ var ts = await Tileset.load({
 })
 
 var tilemap = new Tilemap();
-tilemap.fromJson("assets/maps/map2.json");
+await tilemap.fromJson("assets/maps/map2.json");
 
 scene.addChild(tilemap);
 scene.addObject(animated);
@@ -113,3 +113,4 @@ scene.addObject(animated);
 var mapEditor = new MapEditor();
 mapEditor.setMap(tilemap);
 mapEditor.setScene(scene);
+

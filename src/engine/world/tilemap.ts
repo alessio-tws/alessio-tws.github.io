@@ -31,8 +31,8 @@ class Tilemap extends Container {
 		super();
 	}
 
-	public fromJson(jsonUrl : string) {
-		axios.get(jsonUrl)
+	public async fromJson(jsonUrl : string) {
+		await axios.get(jsonUrl)
 			.then((resp) => {
 				let map = resp.data;
 				this.initialize(map.mapHeight, map.mapHeight, map.cellSize);
@@ -41,7 +41,6 @@ class Tilemap extends Container {
 					var keys = Object.keys(layers);
 					for(var layer of keys) {
 						let layerNum = parseInt(layer);
-						console.log(layer);
 						var tileset = Tileset.get(layers[layer].tileset);
 						if (tileset) {
 							this.setTile(tile.x, tile.y, tileset, layers[layer].tileId, layerNum);
