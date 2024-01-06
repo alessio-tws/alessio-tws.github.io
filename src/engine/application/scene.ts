@@ -1,9 +1,8 @@
 import { Application, Container, DisplayObject } from "pixi.js";
 import { WorldObject } from "../world/world-object";
-import { StaticObject } from "../world/static-object";
-import { DynamicObject } from "../world/dynamic-object";
 import { Game } from "./game";
 import GameMath from "../math";
+import DisplayComponent from "../components/graphics/display-component";
 
 enum SceneFollowBehavior {
 	FollowTarget = 0,
@@ -16,39 +15,41 @@ type FocusPoint = {
 }
 
 class Scene extends Container {
-	private objects : Array<WorldObject>;
-	private keyStates : Map<string, boolean> = new Map<string, boolean>();
-	public onKeyDown : Array<(e : KeyboardEvent) => void> = [];
-	public onKeyUp : Array<(e : KeyboardEvent) => void> = [];
+	objects : Array<WorldObject>;
 
 	public followBehavior : SceneFollowBehavior = SceneFollowBehavior.FollowTarget;
-	public followTarget : WorldObject | null = null;
+	public followTarget : Container | null = null;
 	public focusPoint : FocusPoint | null = null;
 	public followSpeed : number = 0.2;
 
 	constructor() {
 		super();
-		this.objects = [];
-		document.addEventListener("keydown", this._onKeyDown.bind(this));
-		document.addEventListener("keyup", this._onKeyUp.bind(this));
+		this.objects = [];		
 		this.sortableChildren = true;
 	}
 
 	public startScene(stage : Container) {
 		stage.addChild(this);
 		Game.app.ticker.add(this.tick.bind(this));
+		for(var obj of this.objects) {
+			obj.start();
+		}
 	}
 	public stopScene() {
-
+		Game.app.ticker.remove(this.tick);
+		this.removeChildren(0, this.children.length);
+		let index = Game.app.stage.children.indexOf(this);
+		Game.app.stage.removeChildAt(index);
+		this.destroy();
 	}
 	
 	private tick(delta : number) {
-		
+		if (!this.transform) return;
 		switch(this.followBehavior) {
 			case SceneFollowBehavior.FollowTarget:
-				if (this.followTarget && this.followTarget.getDisplayObject()) {
-					this.x = GameMath.lerp(this.x, -this.followTarget.getDisplayObject().x + Game.app.screen.width / 2, delta * this.followSpeed);
-					this.y = GameMath.lerp(this.y, -this.followTarget.getDisplayObject().y + Game.app.screen.height / 2, delta * this.followSpeed);
+				if (this.followTarget) {
+					this.x = GameMath.lerp(this.x, -this.followTarget.x + Game.app.screen.width / 2, delta * this.followSpeed);
+					this.y = GameMath.lerp(this.y, -this.followTarget.y + Game.app.screen.height / 2, delta * this.followSpeed);
 				}
 				break;
 			case SceneFollowBehavior.FocusPoint:
@@ -61,33 +62,16 @@ class Scene extends Container {
 				break;
 		}
 	}
-
-	public isKeyDown(keyCode : string) : boolean {
-		return this.keyStates.has(keyCode) ? this.keyStates.get(keyCode) : false;
-	}
-	private _onKeyDown(e : KeyboardEvent) : void {
-		if (!this.keyStates.has(e.code)) {
-			this.keyStates.set(e.code, false);
-		}
-
-		if (!this.keyStates.get(e.code)) {
-			for(var cb of this.onKeyDown) {
-				cb(e);
-			}
-		}
-		this.keyStates.set(e.code, true);
-	}
-	private _onKeyUp(e : KeyboardEvent) : void { 
-		this.keyStates.set(e.code, false);
-		for(var cb of this.onKeyUp) {
-			cb(e);
-		}
-	}	
-
+		
 	public addObject(object : WorldObject) {
 		this.objects.push(object);
 		object.scene = this;
-		object.onAddedToScene();
+		this.addChild(object);
+		object.onAddedToScene(this);
+	}
+	public removeObject(object : WorldObject) {
+		this.removeChild(object);
+		this.objects = this.objects.filter(o => o !== object);
 	}
 	public getObjectByName(name : String) : WorldObject | null {
 		for(var obj of this.objects) {

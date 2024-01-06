@@ -42,6 +42,17 @@ class Game {
 		}
 	}
 
+	static async nextFrame() {
+		return new Promise( resolve => {
+			Game.app.ticker.addOnce(() => resolve(0));
+		});
+	}
+	static async delay(delay : number) {
+		return new Promise( resolve => {
+			setTimeout(resolve, delay);
+		})
+	}
+
 	static resize() {
 		  // current screen size
 		  const screenWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);

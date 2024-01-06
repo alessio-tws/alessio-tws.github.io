@@ -14,7 +14,7 @@ class MapEditor {
 	currentTiles : Array<MapEditorTile> = [];
 
 	tiles : Array<MapEditorTile> = [];
-
+	currentTileset : string;
 	layerInput : JQuery<HTMLElement>;
 
 	currentScene : Scene;
@@ -64,35 +64,53 @@ class MapEditor {
 
 	private constructTilesets() {
 
+		var list = $("<select>", { id: "tileset-list", name: "tileset-list"})
+		.on("change", (e) => {
+			var id = (e.target as HTMLSelectElement).selectedIndex;
+			var element = (e.target as HTMLSelectElement).options[id];
+			var tileset = Tileset.get(element.getAttribute("file-path"));
+			if (tileset) {
+				this.loadTileset(tileset);
+				this.currentTileset = element.getAttribute("file-path");
+			}
+		}).appendTo(this.root);
+		var element = $("<div>", { class: "map-editor-tileset", id: "map-editor-tileset" }).appendTo(this.root);
+		
+		var firstKey = null;
 		for(var key of Tileset.tilesets.keys()) {
+			if (!firstKey) firstKey = key;
 			var split = key.split("/");
+			var fileName = split[split.length-1];
+			$("<option>", { value: fileName }).append(fileName).attr("file-path", key).appendTo(list);
 			var tileset = Tileset.get(key);
+		}
 
-			// Create root element
-			var element = $("<div>", { class: "map-editor-tileset" });
+		this.loadTileset(Tileset.get(firstKey));
+	}
 
-			// Create container for image and grid
-			var tilesetGrid = $("<div>", { class: "map-editor-tileset-grid" }).appendTo(element);
+	private loadTileset(tileset : Tileset) {
+		this.currentTiles = [];
+		// Create root element
+		var element = $("#map-editor-tileset").text("");
+		// Create container for image and grid
+		var tilesetGrid = $("<div>", { class: "map-editor-tileset-grid" }).appendTo(element);
 
-			// Create image element to show tileset
-			var img = $("<img>", { src: key, width: tileset.options.width, height: tileset.options.height }).appendTo(tilesetGrid);
-			
-			this.root.append(element);
-			// Create a div for each tile in the tileset
-			var xCount = tileset.options.width / tileset.options.tileWidth;
-			var yCount = tileset.options.height / tileset.options.tileHeight;
-			for(var y = 0; y < yCount; y++) {
-				for(var x = 0; x < xCount; x++) {
-					let id = y * xCount + x;
-					var tile = new MapEditorTile(id, tileset.options.tileWidth, tileset.options.tileHeight, x, y, $(".map-editor-tileset-grid"), this);
-					this.tiles.push(tile);
-				}
+		// Create image element to show tileset
+		var img = $("<img>", { src: tileset.options.texture, width: tileset.options.width, height: tileset.options.height }).appendTo(tilesetGrid);
+		
+		// Create a div for each tile in the tileset
+		var xCount = tileset.options.width / tileset.options.tileWidth;
+		var yCount = tileset.options.height / tileset.options.tileHeight;
+		for(var y = 0; y < yCount; y++) {
+			for(var x = 0; x < xCount; x++) {
+				let id = y * xCount + x;
+				var tile = new MapEditorTile(id, tileset.options.tileWidth, tileset.options.tileHeight, x, y, $(".map-editor-tileset-grid"), this);
+				this.tiles.push(tile);
 			}
 		}
 	}
 
 	focusLayer(layer : number) {
-		
 		for(let y = 0; y < this.currentMap.mapHeight; y++) {
 			for(let x = 0; x < this.currentMap.mapWidth; x++) {
 				var layerKeys = this.currentMap.gridData[x][y].layers.keys();
@@ -147,14 +165,14 @@ class MapEditor {
 			let firstTile = this.currentTiles[0];
 			let firstx = firstTile.x;
 			let firsty = firstTile.y;
-			this.currentMap.setTile(x, y, Tileset.get("assets/images/tilesets/Tileset.png"), firstTile.id, layer);
+			this.currentMap.setTile(x, y, Tileset.get(this.currentTileset), firstTile.id, layer);
 			for(let i = 1; i < this.currentTiles.length; i++) {
 				let tile = this.currentTiles[i];
 				let thisx = tile.x;
 				let thisy = tile.y;
 				let deltaX = thisx - firstx;
 				let deltaY = thisy - firsty;
-				this.currentMap.setTile(x + deltaX, y + deltaY, Tileset.get("assets/images/tilesets/Tileset.png"), tile.id, layer);
+				this.currentMap.setTile(x + deltaX, y + deltaY, Tileset.get(this.currentTileset), tile.id, layer);
 			}
 		}
 	}
@@ -198,3 +216,23 @@ class MapEditor {
 }
 
 export { MapEditor }
+
+
+class Test {
+	array : number[];
+
+
+	creaArray() {
+		var array = [];
+
+		var somma = 0;
+
+		for(let i = 0; i < 10; i++) {
+			array[i] = i + 1;
+			somma += array[i];
+		}
+
+		console.log(somma);
+		return array;
+	}
+}

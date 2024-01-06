@@ -1,6 +1,7 @@
 import { Container, FederatedPointerEvent, Graphics, LineStyle, Sprite } from "pixi.js";
 import { Tileset } from "./tileset";
 import axios from "axios";
+import { WorldObject } from "./world-object";
 
 enum GridCellCollisionType {
 	None = 0,
@@ -133,6 +134,30 @@ class Tilemap extends Container {
 		return this.gridData[x][y].collision !== GridCellCollisionType.Block;
 	}
 
+	public isObjectOnWalkableTile(obj : WorldObject) {
+		if (!obj.collision) {
+			return true;
+		}
+		var corners = [
+			{ x: obj.collision.rect.left, y: obj.collision.rect.top },
+			{ x: obj.collision.rect.left, y: obj.collision.rect.bottom },
+			{ x: obj.collision.rect.right, y: obj.collision.rect.top},
+			{ x: obj.collision.rect.right, y: obj.collision.rect.bottom },
+		]
+		
+		for(var corner of corners) {
+			var newGridCoord = this.worldToGrid(corner.x, corner.y);
+			
+			if (!this.isWalkable(newGridCoord.x, newGridCoord.y))
+			{
+				return false;
+				break;
+			}
+		}
+
+		return true;
+	}
+
 	public gridToWorld(x : number, y : number) {
 		return {
 			x: x * this.cellSize,
@@ -142,8 +167,8 @@ class Tilemap extends Container {
 
 	public worldToGrid(x : number, y : number) {
 		return {
-			x: Math.round(x / this.cellSize),
-			y: Math.ceil(y / this.cellSize)
+			x: Math.floor(x / this.cellSize),
+			y: Math.floor(y / this.cellSize)
 		}
 	}
 }

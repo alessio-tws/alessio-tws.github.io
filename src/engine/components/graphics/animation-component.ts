@@ -1,5 +1,6 @@
-import { AnimatedSprite, BaseTexture, DisplayObject, ISpritesheetData, ObservablePoint, SpriteSource, Spritesheet } from "pixi.js";
-import { WorldObject } from "./world-object";
+import { AnimatedSprite, BaseTexture, ISpritesheetData, Sprite, Spritesheet } from "pixi.js";
+import WorldObjectComponent from "../world-object-component";
+import StaticDisplayComponent from "./sprite-display-component";
 
 type SpritesheetOptions = {
 	texture : string,
@@ -12,14 +13,16 @@ type SpritesheetOptions = {
 	animationSpeed : number
 }
 
-class DynamicObject extends WorldObject {
-	sprites : Map<String, AnimatedSprite> = new Map<String, AnimatedSprite>();
+export default class AnimationComponent extends WorldObjectComponent {
 	currentSprite : AnimatedSprite;
+	sprites : Map<String, AnimatedSprite> = new Map<String, AnimatedSprite>();
 	atlasData : ISpritesheetData;
 	spritesheet : Spritesheet;
 	spritesheetOptions : SpritesheetOptions;
 
-	constructor(name : String, textureOptions : SpritesheetOptions) {
+	target : Sprite;
+
+	constructor(name : string, textureOptions : SpritesheetOptions) {
 		super(name);
 		this.spritesheetOptions = textureOptions;
 		this.atlasData = {
@@ -32,6 +35,9 @@ class DynamicObject extends WorldObject {
 			frames: {},
 			animations: {}
 		}
+		this._type = "animation-component";
+		this.on("addedToObject", this.onAddedToObject.bind(this));
+		//this.on("tick", this.tick.bind(this));
 	}
 	public async initialize() {
 		this.spritesheet = new Spritesheet(BaseTexture.from(this.atlasData.meta.image), this.atlasData);
@@ -46,19 +52,24 @@ class DynamicObject extends WorldObject {
 			sprite.pivot.x = 0;
 			sprite.pivot.y = 0;
 			this.sprites.set(animation,sprite);
-			if (this.scene) {
-				this.scene.addChild(sprite);
+			if (this.parent) {
+				this.parent.addChild(sprite);
 			}
 		}
 		this.sprites.get(keys[0]).visible = true;
 		this.currentSprite = this.sprites.get(keys[0]);
+		this.setAnimation(keys[0]);
 	}
-	public onAddedToScene(): void {
-		for(var sprite of this.sprites)	{
-			this.scene.addChild(sprite[1]);
+	private onAddedToObject(params) {
+		var display = this.parent.getComponent<StaticDisplayComponent>("display");
+		if (display) {
+			this.target = display.sprite;
 		}
 	}
 	public setAnimation(name : String) {
+		var display = this.parent.getComponent<StaticDisplayComponent>("display");
+		if (!display)
+			return;
 		if (this.sprites.has(name)) {
 			var oldSprite : AnimatedSprite;
 			if (this.currentSprite)
@@ -68,10 +79,7 @@ class DynamicObject extends WorldObject {
 			}
 			this.currentSprite = this.sprites.get(name);
 			this.currentSprite.visible = true;
-			if (oldSprite) {
-				this.currentSprite.x = oldSprite.x;
-				this.currentSprite.y = oldSprite.y;
-			}
+			display.sprite = this.currentSprite;
 		}
 	}
 	public play() {
@@ -106,9 +114,4 @@ class DynamicObject extends WorldObject {
 		}
 		return retVal;
 	}
-	public getDisplayObject(): DisplayObject {
-		return this.currentSprite;
-	}
 }
-
-export { DynamicObject }
