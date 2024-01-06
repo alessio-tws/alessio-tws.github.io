@@ -1,0 +1,47 @@
+{
+	"name": "test-char-2",
+	"display": {
+		"textureOptions": {
+			"texture": "assets/images/characters/minis_char1_1.png",
+			"width": 192, 
+			"height": 128,
+			"frameWidth": 16, 
+			"frameHeight": 16,
+			"format": "RGBA8888",
+			"scale": "0.5",
+			"animationSpeed": 0.12
+		},
+		"animations": [
+			{
+				"name": "front",
+				"startX": 3,
+				"startY": 0,
+				"frameCount": 3
+			},
+			{
+				"name": "left",
+				"startX": 3,
+				"startY": 1,
+				"frameCount": 3
+			},
+			{
+				"name": "right",
+				"startX": 3,
+				"startY": 2,
+				"frameCount": 3
+			},
+			{
+				"name": "back",
+				"startX": 3,
+				"startY": 3,
+				"frameCount": 3
+			}
+		]
+	},
+	"collision": {
+		"x": 8,
+		"y": 16,
+		"width": 16,
+		"height": 16
+	}
+}

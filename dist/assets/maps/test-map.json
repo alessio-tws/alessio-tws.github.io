@@ -1,0 +1,22 @@
+{
+	"mapHeight": 30,
+	"mapWidth": 30,
+	"cellSize": 16,
+	"map": [
+		{ 
+			"x": 0, 
+			"y": 0, 
+			"collision": 0,
+			"layers": {
+				"0": {
+					"tileset": "assets/images/tilesets/Tileset.png", 
+					"tileId": 6
+				},
+				"1": {
+					"tileset": "assets/images/tilesets/Tileset.png", 
+					"tileId": 0
+				}
+			}
+		}
+	]
+}
